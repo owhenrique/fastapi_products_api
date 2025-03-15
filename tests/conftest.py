@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from fastapi_products_api.app import app
-from fastapi_products_api.models.produts import products_registry
+from fastapi_products_api.models.products import products_registry
 
 
 @pytest.fixture
