@@ -64,6 +64,7 @@ def product(session):
     new_product = Product(
         name='test-product',
         brand='test-brand',
+        price=299.99,
         type=ProductType.TOYS_AND_GAMES,
     )
 

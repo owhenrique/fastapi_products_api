@@ -37,7 +37,10 @@ def create_product(product: ProductCreate, session: Session):
         )
 
     new_product = Product(
-        name=product.name, brand=product.brand, type=product.type
+        name=product.name,
+        brand=product.brand,
+        type=product.type,
+        price=product.price,
     )
 
     session.add(new_product)
@@ -88,6 +91,7 @@ def update_product(product_id, product: ProductUpdate, session: Session):
     try:
         db_product.name = product.name
         db_product.brand = product.brand
+        db_product.price = product.price
         db_product.type = product.type
 
         session.add(db_product)

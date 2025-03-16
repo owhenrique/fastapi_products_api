@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func
+from sqlalchemy import Numeric, func
 from sqlalchemy.orm import Mapped, mapped_column, registry
 
 from fastapi_products_api.models.enums import ProductType
@@ -15,6 +15,7 @@ class Product:
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=None)
     brand: Mapped[str] = mapped_column(nullable=False)
+    price: Mapped[float] = mapped_column(Numeric(scale=2), nullable=False)
     type: Mapped[ProductType] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()

@@ -11,6 +11,7 @@ def test_create_product_should_return_created(client):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand-1',
+            'price': 299.99,
             'type': ProductType.CLOTHING,
         },
     )
@@ -25,16 +26,18 @@ def test_create_product_should_return_ProductResponse(client, mock_db_time):
             json={
                 'name': 'test-product-1',
                 'brand': 'test-brand-1',
+                'price': 299.99,
                 'type': ProductType.CLOTHING,
             },
         )
 
-    assert response.json() == {
-        'id': 1,
-        'name': 'test-product-1',
-        'brand': 'test-brand-1',
-        'type': 'clothing',
-    }
+    parsed_response = response.json()
+
+    product_schema = ProductResponse.model_validate(
+        parsed_response
+    ).model_dump()
+
+    assert response.json() == product_schema
 
 
 def test_create_product_should_return_conflit(client, product):
@@ -43,6 +46,7 @@ def test_create_product_should_return_conflit(client, product):
         json={
             'name': 'test-product',
             'brand': 'test-brand',
+            'price': 299.99,
             'type': ProductType.CLOTHING,
         },
     )
@@ -94,6 +98,7 @@ def test_update_product_should_return_ok(client, product):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand-1',
+            'price': 299.99,
             'type': ProductType.ELECTRONICS,
         },
     )
@@ -107,6 +112,7 @@ def test_update_product_should_return_product(client, product):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand-1',
+            'price': 299.99,
             'type': ProductType.ELECTRONICS,
         },
     )
@@ -121,6 +127,7 @@ def test_update_product_should_return_not_found(client):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand-1',
+            'price': 299.99,
             'type': ProductType.ELECTRONICS,
         },
     )
@@ -134,6 +141,7 @@ def test_update_product_should_return_conflict(client, product):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand',
+            'price': 299.99,
             'type': ProductType.CLOTHING,
         },
     )
@@ -143,6 +151,7 @@ def test_update_product_should_return_conflict(client, product):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand',
+            'price': 299.99,
             'type': ProductType.ELECTRONICS,
         },
     )
@@ -156,6 +165,7 @@ def test_update_product_should_return_integrity_error(client, product):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand',
+            'price': 299.99,
             'type': ProductType.CLOTHING,
         },
     )
@@ -165,6 +175,7 @@ def test_update_product_should_return_integrity_error(client, product):
         json={
             'name': 'test-product-1',
             'brand': 'test-brand',
+            'price': 299.99,
             'type': ProductType.ELECTRONICS,
         },
     )

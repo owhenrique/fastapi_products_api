@@ -6,6 +6,7 @@ from fastapi_products_api.models.enums import ProductType
 class ProductBase(BaseModel):
     name: str
     brand: str
+    price: float
     type: ProductType
 
 
