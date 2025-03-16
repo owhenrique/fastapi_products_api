@@ -11,9 +11,11 @@ dependencies = [
     "fastapi[standard] (>=0.115.11,<0.116.0)",
     "sqlalchemy (>=2.0.39,<3.0.0)",
     "pydantic-settings (>=2.8.1,<3.0.0)",
-    "alembic (>=1.15.1,<2.0.0)"
+    "alembic (>=1.15.1,<2.0.0)",
+    "pyjwt (>=2.10.1,<3.0.0)",
+    "pwdlib[argon2] (>=0.2.1,<0.3.0)",
+    "tzdata (>=2025.1,<2026.0)"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -24,6 +26,10 @@ taskipy = "^1.14.1"
 pytest = "^8.3.5"
 pytest-cov = "^6.0.0"
 ruff = "^0.11.0"
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ['migrations']
 
 [tool.ruff.lint]
 preview = true

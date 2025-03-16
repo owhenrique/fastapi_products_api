@@ -1,8 +1,8 @@
 """create products table
 
-Revision ID: 880725887a02
+Revision ID: 7df3f776d63a
 Revises: 
-Create Date: 2025-03-15 17:58:12.782448
+Create Date: 2025-03-15 22:31:41.036917
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '880725887a02'
+revision: str = '7df3f776d63a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,9 +24,12 @@ def upgrade() -> None:
     op.create_table('products',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
+    sa.Column('brand', sa.String(), nullable=False),
+    sa.Column('type', sa.Enum('ELECTRONICS', 'CLOTHING', 'HOME_AND_KITCHEN', 'BOOKS', 'SPORTS_AND_OUTDOORS', 'BEAUTY_AND_PERSONAL_CARE', 'TOYS_AND_GAMES', 'AUTOMOTIVE', 'HEALTH_AND_WELLNESS', 'GROCERIES', name='producttype'), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name', name='products_name_uk')
     )
     # ### end Alembic commands ###
 
