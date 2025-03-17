@@ -19,13 +19,13 @@ from fastapi_products_api.schemas.products import (
 
 router = APIRouter(prefix='/products', tags=['products'])
 
-Session = Annotated[Session, Depends(get_session)]
+T_Session = Annotated[Session, Depends(get_session)]
 
 
 @router.post(
     '/', status_code=HTTPStatus.CREATED, response_model=ProductResponse
 )
-def create_product(product: ProductCreate, session: Session):
+def create_product(product: ProductCreate, session: T_Session):
     db_product = session.scalar(
         select(Product).where(Product.name == product.name)
     )
@@ -52,7 +52,7 @@ def create_product(product: ProductCreate, session: Session):
 
 @router.get('/', response_model=ProductsResponse)
 def read_products(
-    filter_products: Annotated[FilterPage, Query()], session: Session
+    filter_products: Annotated[FilterPage, Query()], session: T_Session
 ):
     products = session.scalars(
         select(Product)
@@ -64,7 +64,7 @@ def read_products(
 
 
 @router.get('/{product_id}', response_model=ProductResponse)
-def read_product(product_id: int, session: Session):
+def read_product(product_id: int, session: T_Session):
     db_product = session.scalar(
         select(Product).where(Product.id == product_id)
     )
@@ -78,7 +78,7 @@ def read_product(product_id: int, session: Session):
 
 
 @router.put('/{product_id}', response_model=ProductResponse)
-def update_product(product_id, product: ProductUpdate, session: Session):
+def update_product(product_id, product: ProductUpdate, session: T_Session):
     db_product = session.scalar(
         select(Product).where(Product.id == product_id)
     )
@@ -108,7 +108,7 @@ def update_product(product_id, product: ProductUpdate, session: Session):
 
 
 @router.delete('/{product_id}', response_model=ProductResponse)
-def delete_product(product_id: int, session: Session):
+def delete_product(product_id: int, session: T_Session):
     db_product = session.scalar(
         select(Product).where(Product.id == product_id)
     )

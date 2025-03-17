@@ -1,9 +1,6 @@
 from jwt import decode
 
-from fastapi_products_api.security import create_access_token
-from fastapi_products_api.settings import Settings
-
-settings = Settings()
+from fastapi_products_api.security import create_access_token, settings
 
 
 def test_create_access_token_function():
