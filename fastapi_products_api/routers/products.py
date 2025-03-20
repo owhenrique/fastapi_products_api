@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, Query
 from fastapi.routing import APIRouter
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_products_api.database import get_session
 from fastapi_products_api.models.products import Product
@@ -19,14 +19,14 @@ from fastapi_products_api.schemas.products import (
 
 router = APIRouter(prefix='/products', tags=['products'])
 
-T_Session = Annotated[Session, Depends(get_session)]
+T_Session = Annotated[AsyncSession, Depends(get_session)]
 
 
 @router.post(
     '/', status_code=HTTPStatus.CREATED, response_model=ProductResponse
 )
-def create_product(product: ProductCreate, session: T_Session):
-    db_product = session.scalar(
+async def create_product(product: ProductCreate, session: T_Session):
+    db_product = await session.scalar(
         select(Product).where(Product.name == product.name)
     )
 
@@ -44,28 +44,30 @@ def create_product(product: ProductCreate, session: T_Session):
     )
 
     session.add(new_product)
-    session.commit()
-    session.refresh(new_product)
+    await session.commit()
+    await session.refresh(new_product)
 
     return new_product
 
 
 @router.get('/', response_model=ProductsResponse)
-def read_products(
+async def read_products(
     filter_products: Annotated[FilterPage, Query()], session: T_Session
 ):
-    products = session.scalars(
+    query = await session.scalars(
         select(Product)
         .offset(filter_products.offset)
         .limit(filter_products.limit)
-    ).all()
+    )
+
+    products = query.all()
 
     return {'products': products}
 
 
 @router.get('/{product_id}', response_model=ProductResponse)
-def read_product(product_id: int, session: T_Session):
-    db_product = session.scalar(
+async def read_product(product_id: int, session: T_Session):
+    db_product = await session.scalar(
         select(Product).where(Product.id == product_id)
     )
 
@@ -78,8 +80,10 @@ def read_product(product_id: int, session: T_Session):
 
 
 @router.put('/{product_id}', response_model=ProductResponse)
-def update_product(product_id, product: ProductUpdate, session: T_Session):
-    db_product = session.scalar(
+async def update_product(
+    product_id, product: ProductUpdate, session: T_Session
+):
+    db_product = await session.scalar(
         select(Product).where(Product.id == product_id)
     )
 
@@ -95,8 +99,8 @@ def update_product(product_id, product: ProductUpdate, session: T_Session):
         db_product.type = product.type
 
         session.add(db_product)
-        session.commit()
-        session.refresh(db_product)
+        await session.commit()
+        await session.refresh(db_product)
 
         return db_product
 
@@ -108,8 +112,8 @@ def update_product(product_id, product: ProductUpdate, session: T_Session):
 
 
 @router.delete('/{product_id}', response_model=ProductResponse)
-def delete_product(product_id: int, session: T_Session):
-    db_product = session.scalar(
+async def delete_product(product_id: int, session: T_Session):
+    db_product = await session.scalar(
         select(Product).where(Product.id == product_id)
     )
 
@@ -120,7 +124,7 @@ def delete_product(product_id: int, session: T_Session):
 
     deleted_product = db_product
 
-    session.delete(db_product)
-    session.commit()
+    await session.delete(db_product)
+    await session.commit()
 
     return deleted_product
