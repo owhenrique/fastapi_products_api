@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from fastapi_products_api.app import app
 from fastapi_products_api.database import get_session
 from fastapi_products_api.models.enums import ProductType
-from fastapi_products_api.models.products import Product, products_registry
+from fastapi_products_api.models.products import Product
+from fastapi_products_api.registry import table_registry
 
 
 @pytest.fixture
@@ -34,13 +35,13 @@ async def session():
     )
 
     async with engine.begin() as conn:
-        await conn.run_sync(products_registry.metadata.create_all)
+        await conn.run_sync(table_registry.metadata.create_all)
 
     async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session
 
     async with engine.begin() as conn:
-        await conn.run_sync(products_registry.metadata.drop_all)
+        await conn.run_sync(table_registry.metadata.drop_all)
 
 
 @contextmanager

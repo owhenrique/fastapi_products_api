@@ -6,7 +6,8 @@ from alembic import context
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import engine_from_config, pool
 
-from fastapi_products_api.models.products import Product, products_registry
+from fastapi_products_api.models.products import Product
+from fastapi_products_api.registry import table_registry
 from fastapi_products_api.settings import Settings
 
 settings = Settings()
@@ -17,11 +18,16 @@ config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = products_registry.metadata
+target_metadata = table_registry.metadata
 
 
 def do_run_migrations(connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_type=True,
+        render_as_batch=True
+    )
 
     with context.begin_transaction():
         context.run_migrations()

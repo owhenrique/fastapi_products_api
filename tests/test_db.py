@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from fastapi_products_api.models.enums import ProductType
 from fastapi_products_api.models.products import Product
+from fastapi_products_api.models.users import User
 
 
 @pytest.mark.asyncio
@@ -32,6 +33,33 @@ async def test_create_product(session, mock_db_time):
         'brand': 'kinder',
         'price': Decimal('13.99'),
         'type': ProductType.GROCERIES,
+        'created_at': time,
+        'updated_at': time,
+    }
+
+
+@pytest.mark.asyncio
+async def test_create_user(session, mock_db_time):
+    with mock_db_time(model=User) as time:
+        new_user = User(
+            username='admin0test',
+            email='admin@test.com',
+            password='secret',
+            is_superuser=True,
+        )
+
+        session.add(new_user)
+        await session.commit()
+        await session.refresh(new_user)
+
+    db_user = await session.scalar(select(User).where(User.id == new_user.id))
+
+    assert asdict(db_user) == {
+        'id': 1,
+        'username': 'admin0test',
+        'email': 'admin@test.com',
+        'password': 'secret',
+        'is_superuser': True,
         'created_at': time,
         'updated_at': time,
     }
