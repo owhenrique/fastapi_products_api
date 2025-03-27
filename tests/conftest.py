@@ -11,7 +11,9 @@ from fastapi_products_api.app import app
 from fastapi_products_api.database import get_session
 from fastapi_products_api.models.enums import ProductType
 from fastapi_products_api.models.products import Product
+from fastapi_products_api.models.users import User
 from fastapi_products_api.registry import table_registry
+from fastapi_products_api.security import get_password_hash
 
 
 @pytest.fixture
@@ -78,3 +80,52 @@ async def product(session):
     await session.refresh(new_product)
 
     return new_product
+
+
+@pytest_asyncio.fixture
+async def user(session):
+    password = 'secret'
+
+    new_user = User(
+        username='test-user',
+        email='test@mail.com',
+        password=get_password_hash(password),
+        is_superuser=True,
+    )
+
+    session.add(new_user)
+    await session.commit()
+    await session.refresh(new_user)
+
+    new_user.plain_password = password
+
+    return new_user
+
+
+@pytest_asyncio.fixture
+async def other_user(session):
+    password = 'secret'
+
+    new_user = User(
+        username='other-test-user',
+        email='other-test@mail.com',
+        password=get_password_hash(password),
+    )
+
+    session.add(new_user)
+    await session.commit()
+    await session.refresh(new_user)
+
+    new_user.plain_password = password
+
+    return new_user
+
+
+@pytest_asyncio.fixture
+async def token(client, user):
+    response = client.post(
+        '/auth/token',
+        data={'username': user.username, 'password': user.plain_password},
+    )
+
+    return response.json()['access_token']

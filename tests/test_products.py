@@ -8,6 +8,7 @@ from fastapi_products_api.schemas.products import ProductResponse
 def test_create_product_should_return_created(client):
     response = client.post(
         '/products',
+        headers={},
         json={
             'name': 'test-product-1',
             'brand': 'test-brand-1',

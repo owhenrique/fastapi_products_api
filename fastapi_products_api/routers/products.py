@@ -1,13 +1,12 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Query
+from fastapi import HTTPException, Query
 from fastapi.routing import APIRouter
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi_products_api.database import get_session
+from fastapi_products_api.dependencies import T_Session
 from fastapi_products_api.models.products import Product
 from fastapi_products_api.schemas.products import (
     FilterPage,
@@ -19,13 +18,14 @@ from fastapi_products_api.schemas.products import (
 
 router = APIRouter(prefix='/products', tags=['products'])
 
-T_Session = Annotated[AsyncSession, Depends(get_session)]
-
 
 @router.post(
     '/', status_code=HTTPStatus.CREATED, response_model=ProductResponse
 )
-async def create_product(product: ProductCreate, session: T_Session):
+async def create_product(
+    product: ProductCreate,
+    session: T_Session,
+):
     db_product = await session.scalar(
         select(Product).where(Product.name == product.name)
     )
