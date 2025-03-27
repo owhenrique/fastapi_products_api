@@ -7,4 +7,4 @@ class Token(BaseModel):
     token_type: str = 'bearer'
 
 
-OAuth_scheme = OAuth2PasswordBearer(tokenUrl='token')
+OAuth_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')

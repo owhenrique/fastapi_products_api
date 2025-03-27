@@ -21,31 +21,22 @@ router = APIRouter(prefix='/users', tags=['users'])
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=ResponseUser)
 async def create_user(user: UserCreate, session: T_Session):
-    db_user = await session.scalar(
-        select(User).where(
-            (User.username == user.username) | (User.email == user.email)
+    try:
+        new_user_data = user.model_dump()
+        if 'password' in new_user_data:
+            new_user_data['password'] = get_password_hash(user.password)
+
+        new_user = User(**new_user_data)
+
+        session.add(new_user)
+        await session.commit()
+        await session.refresh(new_user)
+
+    except IntegrityError:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='Username or email already exists',
         )
-    )
-
-    if db_user:
-        if db_user.email == user.email:
-            raise HTTPException(
-                status_code=HTTPStatus.CONFLICT, detail='Email already exists'
-            )
-        if db_user.username == user.username:
-            raise HTTPException(
-                status_code=HTTPStatus.CONFLICT,
-                detail='Username already exists',
-            )
-    hashed_password = get_password_hash(user.password)
-
-    new_user = User(
-        username=user.username, email=user.email, password=hashed_password
-    )
-
-    session.add(new_user)
-    await session.commit()
-    await session.refresh(new_user)
 
     return new_user
 
