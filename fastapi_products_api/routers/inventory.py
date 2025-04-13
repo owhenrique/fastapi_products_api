@@ -20,18 +20,12 @@ router = APIRouter(prefix='/inventory', tags=['inventory'])
     response_model=ResponseUserInventoryAddProduct,
 )
 async def add_product_to_user_inventory(
-    inventory_add: UserInventoryAddProduct,
+    inventory: UserInventoryAddProduct,
     current_user: T_CurrentUser,
     session: T_Session,
 ):
-    if inventory_add.user_id != current_user.id:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail='Not enought permissions',
-        )
-
     db_product = await session.scalar(
-        select(Product).where(Product.id == inventory_add.product_id)
+        select(Product).where(Product.id == inventory.product_id)
     )
 
     if not db_product:
@@ -39,14 +33,14 @@ async def add_product_to_user_inventory(
             status_code=HTTPStatus.NOT_FOUND, detail='Product not found'
         )
 
-    new_inventory_add = ProductUser(
-        user_id=inventory_add.user_id,
-        product_id=inventory_add.product_id,
-        quantity=inventory_add.quantity,
+    new_inventory = ProductUser(
+        user_id=current_user.id,
+        product_id=inventory.product_id,
+        quantity=inventory.quantity,
     )
 
-    session.add(new_inventory_add)
+    session.add(new_inventory)
     await session.commit()
-    await session.refresh(new_inventory_add)
+    await session.refresh(new_inventory)
 
-    return new_inventory_add
+    return new_inventory

@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 
 class InventoryBase(BaseModel):
-    user_id: int
     product_id: int
 
 
@@ -13,6 +12,7 @@ class UserInventoryAddProduct(InventoryBase):
 
 
 class ResponseUserInventoryAddProduct(InventoryBase):
+    user_id: int
     quantity: int
     created_at: datetime
     updated_at: datetime
