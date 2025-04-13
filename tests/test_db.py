@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import select
 
 from fastapi_products_api.models.enums import ProductType
+from fastapi_products_api.models.product_user import ProductUser
 from fastapi_products_api.models.products import Product
 from fastapi_products_api.models.users import User
 
@@ -60,6 +61,33 @@ async def test_create_user(session, mock_db_time):
         'email': 'admin@test.com',
         'password': 'secret',
         'is_superuser': True,
+        'created_at': time,
+        'updated_at': time,
+    }
+
+
+@pytest.mark.asyncio
+async def test_create_inventory(session, user, product, mock_db_time):
+    with mock_db_time(model=ProductUser) as time:
+        new_inventory = ProductUser(
+            user_id=user.id, product_id=product.id, quantity=1
+        )
+
+        session.add(new_inventory)
+        await session.commit()
+        await session.refresh(new_inventory)
+
+    db_inventory = await session.scalar(
+        select(ProductUser).where(
+            ProductUser.user_id == user.id,
+            ProductUser.product_id == product.id,
+        )
+    )
+
+    assert asdict(db_inventory) == {
+        'user_id': user.id,
+        'product_id': product.id,
+        'quantity': 1,
         'created_at': time,
         'updated_at': time,
     }
