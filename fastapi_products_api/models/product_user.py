@@ -16,7 +16,7 @@ class ProductUser:
     product_id: Mapped[int] = mapped_column(
         ForeignKey('products.id'), primary_key=True
     )
-    quantity: Mapped[int]
+    quantity: Mapped[int] = mapped_column(default=1)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )

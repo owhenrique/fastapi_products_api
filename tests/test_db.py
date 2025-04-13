@@ -69,9 +69,7 @@ async def test_create_user(session, mock_db_time):
 @pytest.mark.asyncio
 async def test_create_inventory(session, user, product, mock_db_time):
     with mock_db_time(model=ProductUser) as time:
-        new_inventory = ProductUser(
-            user_id=user.id, product_id=product.id, quantity=1
-        )
+        new_inventory = ProductUser(user_id=user.id, product_id=product.id)
 
         session.add(new_inventory)
         await session.commit()
