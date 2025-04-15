@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from fastapi_products_api.models.enums import ProductType
+
 
 class InventoryBase(BaseModel):
     product_id: int
@@ -16,3 +18,11 @@ class ResponseUserInventoryAddProduct(InventoryBase):
     quantity: int
     created_at: datetime
     updated_at: datetime
+
+
+class ResponseUserInventoryReadProduct(InventoryBase):
+    name: str
+    brand: str
+    price: float
+    type: ProductType
+    quantity: int

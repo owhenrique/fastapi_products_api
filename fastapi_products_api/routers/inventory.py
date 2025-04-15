@@ -6,8 +6,10 @@ from sqlalchemy import select
 from fastapi_products_api.dependencies import T_CurrentUser, T_Session
 from fastapi_products_api.models.product_user import ProductUser
 from fastapi_products_api.models.products import Product
+from fastapi_products_api.models.users import User
 from fastapi_products_api.schemas.inventory import (
     ResponseUserInventoryAddProduct,
+    ResponseUserInventoryReadProduct,
     UserInventoryAddProduct,
 )
 
@@ -44,3 +46,31 @@ async def add_product_to_user_inventory(
     await session.refresh(new_inventory)
 
     return new_inventory
+
+
+@router.get('/{product_id}', response_model=ResponseUserInventoryReadProduct)
+async def read_product_inventory_by_product_id(
+    product_id: int,
+    current_user: T_CurrentUser, 
+    session: T_Session
+):
+    stmt = (
+        select(
+            ProductUser.quantity,
+            ProductUser.product_id,
+            Product.name,
+            Product.brand,
+            Product.price,
+            Product.type
+        )
+        .join_from(ProductUser, Product)
+        .where(
+            ProductUser.user_id == current_user.id,
+            ProductUser.product_id == product_id
+        )
+    )
+
+    if inventory_data := (await session.execute(stmt)).mappings().first():
+        return inventory_data
+    
+    raise HTTPException(status_code=404, detail='Product not found')
