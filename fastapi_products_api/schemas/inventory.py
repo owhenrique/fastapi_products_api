@@ -14,7 +14,6 @@ class UserInventoryAddProduct(InventoryBase):
 
 
 class ResponseUserInventoryAddProduct(InventoryBase):
-    user_id: int
     quantity: int
     created_at: datetime
     updated_at: datetime
@@ -26,3 +25,12 @@ class ResponseUserInventoryReadProduct(InventoryBase):
     price: float
     type: ProductType
     quantity: int
+
+
+class ResponseUserInventoryReadList(BaseModel):
+    products: list[ResponseUserInventoryReadProduct]
+
+
+class FilterUserInventory(BaseModel):
+    offset: int = 0
+    limit: int = 100

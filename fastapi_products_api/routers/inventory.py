@@ -1,14 +1,16 @@
 from http import HTTPStatus
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
 
 from fastapi_products_api.dependencies import T_CurrentUser, T_Session
 from fastapi_products_api.models.product_user import ProductUser
 from fastapi_products_api.models.products import Product
-from fastapi_products_api.models.users import User
 from fastapi_products_api.schemas.inventory import (
+    FilterUserInventory,
     ResponseUserInventoryAddProduct,
+    ResponseUserInventoryReadList,
     ResponseUserInventoryReadProduct,
     UserInventoryAddProduct,
 )
@@ -50,9 +52,7 @@ async def add_product_to_user_inventory(
 
 @router.get('/{product_id}', response_model=ResponseUserInventoryReadProduct)
 async def read_product_inventory_by_product_id(
-    product_id: int,
-    current_user: T_CurrentUser, 
-    session: T_Session
+    product_id: int, current_user: T_CurrentUser, session: T_Session
 ):
     stmt = (
         select(
@@ -61,16 +61,44 @@ async def read_product_inventory_by_product_id(
             Product.name,
             Product.brand,
             Product.price,
-            Product.type
+            Product.type,
         )
         .join_from(ProductUser, Product)
         .where(
             ProductUser.user_id == current_user.id,
-            ProductUser.product_id == product_id
+            ProductUser.product_id == product_id,
         )
     )
 
     if inventory_data := (await session.execute(stmt)).mappings().first():
         return inventory_data
-    
+
     raise HTTPException(status_code=404, detail='Product not found')
+
+
+@router.get('/', response_model=ResponseUserInventoryReadList)
+async def read_product_inventory_list(
+    filter_products: Annotated[FilterUserInventory, Query()],
+    current_user: T_CurrentUser,
+    session: T_Session,
+):
+    # Query corrigida para carregar ambos os modelos e mapear para o response
+    stmt = (
+        select(
+            ProductUser.quantity,
+            Product.id.label("product_id"),
+            Product.name,
+            Product.brand,
+            Product.price,
+            Product.type
+        )
+        .join_from(ProductUser, Product)
+        .where(ProductUser.user_id == current_user.id)
+        .offset(filter_products.offset)
+        .limit(filter_products.limit)
+    )
+
+    result = await session.execute(stmt)
+    products_data = result.mappings().all()
+    
+    return {'products': products_data}

@@ -9,7 +9,7 @@ def test_add_product_to_user_inventory_should_return_created(
     response = client.post(
         '/inventory',
         json={'product_id': product.id},
-        headers={'Authorization': f'Bearer {token}'}
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.CREATED
@@ -22,7 +22,7 @@ def test_add_product_to_user_inventory_should_return_ResponseSchema(
         response = client.post(
             '/inventory',
             json={'product_id': product.id, 'quantity': 5},
-            headers={'Authorization': f'Bearer {token}'}
+            headers={'Authorization': f'Bearer {token}'},
         )
 
     assert response.json() == {
@@ -34,13 +34,11 @@ def test_add_product_to_user_inventory_should_return_ResponseSchema(
     }
 
 
-def test_add_product_to_user_inventory_should_return_not_found(
-    client, token
-):
+def test_add_product_to_user_inventory_should_return_not_found(client, token):
     response = client.post(
         '/inventory',
         json={'product_id': 999},
-        headers={'Authorization': f'Bearer {token}'}
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
