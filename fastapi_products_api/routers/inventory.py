@@ -82,15 +82,14 @@ async def read_product_inventory_list(
     current_user: T_CurrentUser,
     session: T_Session,
 ):
-    # Query corrigida para carregar ambos os modelos e mapear para o response
     stmt = (
         select(
             ProductUser.quantity,
-            Product.id.label("product_id"),
+            Product.id.label('product_id'),
             Product.name,
             Product.brand,
             Product.price,
-            Product.type
+            Product.type,
         )
         .join_from(ProductUser, Product)
         .where(ProductUser.user_id == current_user.id)
@@ -100,5 +99,5 @@ async def read_product_inventory_list(
 
     result = await session.execute(stmt)
     products_data = result.mappings().all()
-    
+
     return {'products': products_data}

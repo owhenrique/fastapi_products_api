@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from fastapi_products_api.app import app
 from fastapi_products_api.database import get_session
 from fastapi_products_api.models.enums import ProductType
+from fastapi_products_api.models.product_user import ProductUser
 from fastapi_products_api.models.products import Product
 from fastapi_products_api.models.users import User
 from fastapi_products_api.registry import table_registry
@@ -119,6 +120,19 @@ async def other_user(session):
     new_user.plain_password = password
 
     return new_user
+
+
+@pytest_asyncio.fixture
+async def inventory(session, user, product):
+    new_inventory = ProductUser(
+        user_id=user.id, product_id=product.id, quantity=2
+    )
+
+    session.add(new_inventory)
+    await session.commit()
+    await session.refresh(new_inventory)
+
+    return new_inventory
 
 
 @pytest_asyncio.fixture
