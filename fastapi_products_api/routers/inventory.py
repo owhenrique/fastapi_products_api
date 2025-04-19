@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from fastapi_products_api.dependencies import T_CurrentUser, T_Session
 from fastapi_products_api.models.product_user import ProductUser
@@ -12,7 +12,9 @@ from fastapi_products_api.schemas.inventory import (
     ResponseUserInventoryAddProduct,
     ResponseUserInventoryReadList,
     ResponseUserInventoryReadProduct,
+    ResponseUserInventoryUpdateProductQuantity,
     UserInventoryAddProduct,
+    UserInventoryUpdateProduct,
 )
 
 router = APIRouter(prefix='/inventory', tags=['inventory'])
@@ -101,3 +103,51 @@ async def read_product_inventory_list(
     products_data = result.mappings().all()
 
     return {'products': products_data}
+
+
+@router.patch('/', response_model=ResponseUserInventoryUpdateProductQuantity)
+async def update_product_inventory_quantity(
+    inventory: UserInventoryUpdateProduct,
+    current_user: T_CurrentUser,
+    session: T_Session,
+):
+    stmt_update = (
+        update(ProductUser)
+        .where(
+            ProductUser.user_id == current_user.id,
+            ProductUser.product_id == inventory.product_id,
+        )
+        .values(quantity=inventory.quantity)
+    )
+
+    result_update = await session.execute(stmt_update)
+
+    if result_update.rowcount == 0:
+        raise HTTPException(status_code=404, detail='Product not found')
+
+    # 2. Busca os dados atualizados com JOIN
+    stmt_select = (
+        select(
+            ProductUser.quantity,
+            ProductUser.product_id,
+            Product.name,
+            Product.brand,
+            Product.price,
+            Product.type,
+        )
+        .join_from(ProductUser, Product)
+        .where(
+            ProductUser.user_id == current_user.id,
+            ProductUser.product_id == inventory.product_id,
+        )
+    )
+
+    result = await session.execute(stmt_select)
+    await session.commit()
+
+    if inventory_data := result.mappings().first():
+        return inventory_data
+
+    raise HTTPException(
+        status_code=500, detail='Update succeeded but failed to retrieve data'
+    )

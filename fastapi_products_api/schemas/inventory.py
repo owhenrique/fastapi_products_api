@@ -34,3 +34,16 @@ class ResponseUserInventoryReadList(BaseModel):
 class FilterUserInventory(BaseModel):
     offset: int = 0
     limit: int = 100
+
+
+class UserInventoryUpdateProduct(BaseModel):
+    product_id: int
+    quantity: int
+
+
+class ResponseUserInventoryUpdateProductQuantity(InventoryBase):
+    name: str
+    brand: str
+    price: float
+    type: ProductType
+    quantity: int

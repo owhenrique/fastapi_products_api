@@ -4,6 +4,7 @@ from fastapi_products_api.models.product_user import ProductUser
 from fastapi_products_api.schemas.inventory import (
     ResponseUserInventoryReadList,
     ResponseUserInventoryReadProduct,
+    ResponseUserInventoryUpdateProductQuantity,
 )
 
 
@@ -90,7 +91,7 @@ def test_read_product_inventory_list_should_return_ok(
     client, token, product, inventory
 ):
     response = client.get(
-        '/inventory/',
+        '/inventory',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -110,5 +111,37 @@ def test_read_product_inventory_list_should_return_inventory_list(
     inventory_schema = ResponseUserInventoryReadList.model_validate(
         parsed_response
     ).model_dump()
+
+    assert response.json() == inventory_schema
+
+
+def test_update_product_inventory_quantity_should_return_ok(
+    client, token, product, inventory
+):
+    response = client.patch(
+        '/inventory',
+        json={'product_id': product.id, 'quantity': 5},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_update_product_inventory_quantity_should_return_inventory(
+    client, token, product, inventory
+):
+    response = client.patch(
+        '/inventory',
+        json={'product_id': product.id, 'quantity': 5},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    parsed_response = response.json()
+
+    inventory_schema = (
+        ResponseUserInventoryUpdateProductQuantity.model_validate(
+            parsed_response
+        ).model_dump()
+    )
 
     assert response.json() == inventory_schema
